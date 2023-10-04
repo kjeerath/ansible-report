@@ -12,12 +12,12 @@
     #random settings
     csv_path: /tmp
     csv_filename: report.csv
-    headers: Hostname,Distro Ver,Kernel Ver,Last Rebooted
+    headers: Hostname,Distro Ver,CPU Core,Memory
 
   tasks:
-  - name: Gather last reboot
-    ansible.builtin.shell: last reboot | grep -m1 "" | awk '{ print $1, $6, $7, $8 }'
-    register: rebooted
+#  - name: Gather last reboot
+#   ansible.builtin.shell: last reboot | grep -m1 "" | awk '{ print $1, $6, $7, $8 }'
+#    register: rebooted
 
   - name: Save CSV headers
     ansible.builtin.lineinfile:
@@ -31,7 +31,8 @@
   - name: Build out CSV file
     ansible.builtin.lineinfile:
       dest: "{{ csv_path }}/{{ csv_filename }}"
-      line: "{{ inventory_hostname }},{{ ansible_distribution_version }},{{ ansible_kernel }},{{ rebooted.stdout }}"
+#      line: "{{ inventory_hostname }},{{ ansible_distribution_version }},{{ ansible_kernel }},{{ rebooted.stdout }}"
+      line: "{{ ansible_hostname }},{{ ansible_distribution }},{{ ansible_processor_cores }},{{ ansible_memtotal_mb }}"
       create: true
       state: present
     delegate_to: localhost
@@ -48,15 +49,15 @@
 #      var: csv_file
 #    run_once: true
 
-  - name: Send Email
-    community.general.mail:
-      host: "{{ email_host }}"
-      from: "{{ email_from }}"
-      port: 25
-      to: "{{ email_to }}"
-      subject: "[Ansible] {{ email_subject }}"
-      body: "{{ lookup('template', 'report.html.j2') }}"
-      attach: "{{ csv_path }}/{{ csv_filename }}"
-      subtype: html
-    delegate_to: localhost
-    run_once: true
+#  - name: Send Email
+#    community.general.mail:
+#      host: "{{ email_host }}"
+#      from: "{{ email_from }}"
+#      port: 25
+#      to: "{{ email_to }}"
+#      subject: "[Ansible] {{ email_subject }}"
+#      body: "{{ lookup('template', 'report.html.j2') }}"
+#      attach: "{{ csv_path }}/{{ csv_filename }}"
+#      subtype: html
+#    delegate_to: localhost
+#    run_once: true
